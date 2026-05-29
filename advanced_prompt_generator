@@ -1,0 +1,775 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <title>Advanced Visualization Prompt Generator</title> 
+  <style> 
+    :root { 
+      --bg: #03050a; 
+      --surface: #0a0e17; 
+      --surface-hover: #121826;
+      --text: #f0f6fc; 
+      --text-muted: #8b9bb4; 
+      --primary: #38bdf8; 
+      --secondary: #818cf8; 
+      --accent: #2dd4bf;
+      --border: rgba(148, 163, 184, 0.1); 
+      --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+      --radius: 16px; 
+    } 
+ 
+    * { box-sizing: border-box; } 
+ 
+    body { 
+      margin: 0; 
+      min-height: 100vh; 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+      color: var(--text); 
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 15% 0%, rgba(56, 189, 248, 0.12), transparent 40%), 
+        radial-gradient(circle at 85% 30%, rgba(129, 140, 248, 0.08), transparent 40%);
+      padding: 2rem; 
+      line-height: 1.5;
+    } 
+ 
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 2rem; 
+    } 
+ 
+    header { 
+      grid-column: 1 / -1; 
+      text-align: center;
+      margin-bottom: 1rem;
+      padding: 3rem 2rem;
+      background: linear-gradient(180deg, rgba(10, 14, 23, 0.8) 0%, rgba(10, 14, 23, 0) 100%);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    } 
+ 
+    h1 { 
+      margin: 0 0 1rem; 
+      font-size: 3rem; 
+      font-weight: 800;
+      background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    } 
+ 
+    .subtitle { 
+      margin: 0 auto; 
+      max-width: 800px; 
+      color: var(--text-muted); 
+      font-size: 1.125rem; 
+    } 
+
+    .panel { 
+      background: rgba(10, 14, 23, 0.6); 
+      backdrop-filter: blur(12px); 
+      border: 1px solid var(--border); 
+      border-radius: var(--radius); 
+      padding: 2rem;
+      box-shadow: var(--shadow);
+    } 
+ 
+    .form-group {
+      margin-bottom: 2rem;
+    }
+
+    .form-group h3 {
+      font-size: 1.25rem;
+      color: var(--text);
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+ 
+    .control { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; } 
+    .control.full { grid-column: 1 / -1; }
+ 
+    label { 
+      font-size: 0.875rem; 
+      font-weight: 600; 
+      color: var(--text-muted); 
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    } 
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ai-btn {
+      background: rgba(45, 212, 191, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(45, 212, 191, 0.3);
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ai-btn:hover {
+      background: rgba(45, 212, 191, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .ai-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+ 
+    select, input, textarea { 
+      width: 100%; 
+      background: rgba(255, 255, 255, 0.03); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 8px; 
+      color: var(--text); 
+      padding: 0.75rem 1rem; 
+      font-family: inherit;
+      font-size: 1rem; 
+      transition: all 0.2s;
+    } 
+ 
+    textarea { min-height: 100px; resize: vertical; } 
+ 
+    select:focus, input:focus, textarea:focus { 
+      outline: none;
+      border-color: var(--primary); 
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); 
+    } 
+  
+    select option {
+      background: var(--surface);
+      color: var(--text);
+    }
+ 
+    .actions { 
+      display: flex; 
+      gap: 1rem; 
+      margin-top: 2rem; 
+    } 
+ 
+    button { 
+      flex: 1;
+      border: none; 
+      border-radius: 8px; 
+      padding: 1rem 1.5rem; 
+      font-size: 1rem;
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: transform 0.1s, filter 0.2s;
+    } 
+ 
+    button.primary { 
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+      color: #fff; 
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); 
+    } 
+ 
+    button.secondary { 
+      background: rgba(255, 255, 255, 0.05); 
+      color: var(--text); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+    } 
+ 
+    button:hover { 
+      transform: translateY(-2px); 
+      filter: brightness(1.1);
+    } 
+    button:active {
+      transform: translateY(0);
+    }
+
+    .output-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+ 
+    .prompt-box { 
+      flex: 1;
+      background: #000; 
+      border: 1px solid var(--border); 
+      border-radius: var(--radius); 
+      padding: 1.5rem; 
+      position: relative;
+    } 
+ 
+    .prompt-box-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 1rem; 
+    } 
+ 
+    .prompt-box-header h2 { margin: 0; font-size: 1.25rem; } 
+  
+    .badge { 
+      font-size: 0.75rem; 
+      font-weight: 700;
+      background: rgba(45, 212, 191, 0.15); 
+      color: var(--accent);
+      padding: 0.25rem 0.75rem; 
+      border-radius: 999px; 
+      letter-spacing: 0.05em;
+    } 
+ 
+    pre { 
+      margin: 0; 
+      white-space: pre-wrap; 
+      word-break: break-word; 
+      color: #e2e8f0; 
+      font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+      font-size: 0.9rem;
+      line-height: 1.6; 
+    } 
+ 
+    .info-cards { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 1rem; 
+    } 
+ 
+    .card { 
+      background: rgba(255, 255, 255, 0.02); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 1.25rem; 
+      transition: background 0.2s;
+    }
+  
+    .card:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+ 
+    .card h4 { 
+      margin: 0 0 0.5rem; 
+      color: var(--primary); 
+      font-size: 0.9rem; 
+      text-transform: uppercase; 
+      letter-spacing: 0.05em; 
+    } 
+ 
+    .card p { 
+      margin: 0; 
+      color: var(--text-muted); 
+      font-size: 0.875rem; 
+    } 
+ 
+    .toast { 
+      position: fixed; 
+      bottom: 2rem; 
+      left: 50%; 
+      transform: translateX(-50%) translateY(100px); 
+      background: #1e293b; 
+      color: #fff; 
+      padding: 1rem 2rem; 
+      border-radius: 999px; 
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+    } 
+ 
+    .toast.show { transform: translateX(-50%) translateY(0); } 
+ 
+    @media (max-width: 1024px) { 
+      .container { grid-template-columns: 1fr; } 
+    }
+    @media (max-width: 640px) {
+      body { padding: 1rem; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .info-cards { grid-template-columns: 1fr; }
+      h1 { font-size: 2rem; }
+    }
+  </style> 
+</head> 
+<body> 
+  <div class="container"> 
+    <header> 
+      <h1>Advanced Visualization Prompt Generator</h1> 
+      <p class="subtitle">A comprehensive prompt architecture tool for creating detailed internal visualizations, technical diagrams, architectural cutaways, and complex structural studies.</p> 
+    </header> 
+ 
+    <aside class="panel"> 
+      <div class="form-group">
+        <h3>1. Subject & Core</h3>
+        <div class="grid-2">
+          <div class="control"> 
+            <label for="subjectType">Subject Domain</label> 
+            <select id="subjectType"> 
+              <option value="biological">Biological / Organic</option> 
+              <option value="mechanical">Mechanical / Engineering</option> 
+              <option value="architectural">Architectural / Spatial</option>
+              <option value="cybernetic">Cybernetic / Synthetic</option>
+            </select> 
+          </div> 
+          <div class="control"> 
+            <div class="header-row">
+              <label for="subjectInput">Specific Subject</label> 
+              <button id="enhanceSubjectBtn" class="ai-btn" type="button" title="Enhance Subject with AI">✨ Enhance</button>
+            </div>
+            <input id="subjectInput" value="full human body" /> 
+          </div> 
+        </div>
+        <div class="control"> 
+          <label for="sourceUse">Source Image / Base Concept Use</label> 
+          <select id="sourceUse"> 
+            <option value="Use the uploaded image as strict pose/framing reference.">Strict pose/framing reference</option> 
+            <option value="Use as loose inspiration for silhouette and composition.">Loose silhouette inspiration</option> 
+            <option value="Ignore original environment, preserve scale/angle, add technical background.">Subject only, technical background</option> 
+          </select> 
+        </div> 
+      </div>
+
+      <div class="form-group">
+        <h3>2. Visualization Style</h3>
+        <div class="grid-2">
+          <div class="control"> 
+            <label for="visualMode">Primary Mode</label> 
+            <select id="visualMode"> 
+              <option value="X-ray style visualization">X-ray / Radiographic</option> 
+              <option value="cutaway illustration">Cutaway</option> 
+              <option value="cross-sectional study">Cross-section</option> 
+              <option value="transparent-shell visualization">Transparent Shell</option> 
+              <option value="exploded-view diagram">Exploded View</option> 
+              <option value="service-manual-style technical diagram">Service Manual / Schematic</option>
+              <option value="CAD-style section render">CAD Section Render</option> 
+              <option value="architectural section perspective">Architectural Section Perspective</option>
+            </select> 
+          </div> 
+          <div class="control"> 
+            <label for="styleEngine">Aesthetic Engine</label> 
+            <select id="styleEngine"> 
+              <option value="VC-Inspired Fine-Art Radiographic Study">VC-Inspired Fine-Art Radiographic Study</option>
+              <option value="Photon Forcer: Vernacularity & Googly Photons">Photon Forcer: Vernacularity & Googly Photons</option>
+              <option value="VC X-Ray + Photon Forcer Hybrid">VC X-Ray + Photon Forcer Hybrid</option>
+            </select>
+          </div>
+          <div class="control"> 
+            <label for="cameraAngle">Camera & Framing</label> 
+            <select id="cameraAngle"> 
+              <option value="centered hero shot">Centered Hero Shot</option> 
+              <option value="isometric 3/4 angle">Isometric 3/4 View</option> 
+              <option value="dynamic low-angle perspective">Dynamic Low Angle</option> 
+              <option value="top-down orthographic view">Top-down Orthographic</option> 
+              <option value="macro close-up on details">Macro Close-up</option> 
+            </select> 
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <h3>3. Internal Details & Lighting</h3>
+        <div class="grid-2">
+          <div class="control"> 
+            <label for="detailFocus">Structural Focus</label> 
+            <select id="detailFocus"> 
+              <option value="Show major internal structures clearly with high legibility.">General Internals</option> 
+              <option value="Prioritize load-bearing/skeletal framework.">Structural Framework</option> 
+              <option value="Prioritize fluid pathways, energy routing, or nervous systems.">Pathways & Routing</option> 
+              <option value="Show separated functional layers with extreme clarity.">Layered Subsystems</option> 
+            </select> 
+          </div> 
+          <div class="control"> 
+            <label for="lightingStyle">Lighting Engine</label> 
+            <select id="lightingStyle"> 
+              <option value="luminous internal highlighting, subtle subsurface scattering">Luminous & Subsurface</option> 
+              <option value="cool radiographic glow with high contrast">Radiographic Glow</option> 
+              <option value="neutral studio lighting, crisp ambient occlusion">Neutral Studio & AO</option> 
+              <option value="dramatic volumetric lighting, cinematic shadows">Volumetric Cinematic</option> 
+            </select> 
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <h3>4. Aesthetic & Polish</h3>
+        <div class="grid-2">
+          <div class="control"> 
+            <label for="backgroundStyle">Environment</label> 
+            <select id="backgroundStyle"> 
+              <option value="pure pitch black background, zero clutter">Pure Black</option> 
+              <option value="clean white educational plate background">White Plate</option> 
+              <option value="dark blueprint grid with measurement lines">Blueprint Grid</option> 
+              <option value="minimalist museum display pedestal setup">Museum Display</option> 
+            </select> 
+          </div> 
+          <div class="control"> 
+            <div class="header-row">
+              <label for="paletteStyle">Color Palette</label> 
+              <button id="autoPaletteBtn" class="ai-btn" type="button" title="Invent Custom Palette">✨ Auto-Palette</button>
+            </div>
+            <select id="paletteStyle"> 
+              <option value="cyan, blue, and luminous white accents">Radiographic Cyan/Blue</option> 
+              <option value="high-contrast grayscale with bright single-color focal points">Monochrome + Accent</option> 
+              <option value="naturalistic muted tones for organic realism">Naturalistic</option> 
+              <option value="synthwave neon highlights over dark metal">Cyberpunk Neon</option> 
+              <option id="customPaletteOption" value="" style="display:none;"></option>
+            </select> 
+          </div>
+        </div>
+        <div class="control full"> 
+          <div class="header-row">
+            <label for="extraNotes">Custom Instructions</label> 
+            <button id="generateNotesBtn" class="ai-btn" type="button" title="Suggest AI Custom Notes">✨ Suggest Tags</button>
+          </div>
+          <textarea id="extraNotes" placeholder="Add specific labels, precise material requests (e.g., 'brushed steel and carbon fiber'), or model-specific tags..."></textarea> 
+        </div> 
+      </div>
+
+      <div class="actions"> 
+        <button id="copyPrompt" class="primary">Copy Full Prompt</button> 
+        <button id="resetForm" class="secondary">Reset Defaults</button> 
+      </div> 
+    </aside> 
+ 
+    <main class="output-panel"> 
+      <div class="prompt-box panel"> 
+        <div class="prompt-box-header"> 
+          <h2>Final Prompt</h2> 
+          <span class="badge">LIVE UPDATING</span> 
+        </div> 
+        <pre id="promptOutput"></pre> 
+      </div> 
+ 
+      <div class="info-cards"> 
+        <div class="card"> 
+          <h4>AI Powered Tools</h4> 
+          <p>Click the ✨ buttons to harness the Gemini API. Auto-generate custom palettes, descriptive subjects, and expert styling tags.</p> 
+        </div> 
+        <div class="card"> 
+          <h4>Camera & Framing</h4> 
+          <p>Explicit camera controls (isometric, macro, orthographic) to dictate exactly how the internal structure is presented to the viewer.</p> 
+        </div> 
+        <div class="card"> 
+          <h4>Lighting Engines</h4> 
+          <p>Lighting is crucial for internals. Choose between volumetric, radiographic, or clean studio lighting to separate internal layers.</p> 
+        </div> 
+        <div class="card"> 
+          <h4>Usage</h4> 
+          <p>This generated text is formatted to provide maximum context to modern AI image models, establishing style, subject, and anti-patterns.</p> 
+        </div> 
+      </div> 
+    </main> 
+  </div> 
+ 
+  <div id="toast" class="toast">Prompt copied to clipboard!</div> 
+ 
+  <script> 
+    const fields = [ 
+      "subjectType", "subjectInput", "sourceUse", "visualMode", "styleEngine", "cameraAngle",
+      "detailFocus", "lightingStyle", "backgroundStyle", "paletteStyle", "extraNotes" 
+    ]; 
+
+    const styleEngines = {
+      "VC-Inspired Fine-Art Radiographic Study": {
+        title: "VC-Inspired Fine-Art Radiographic Study",
+        summary: "Create a fine-art radiographic visualization that reveals hidden internal architecture with luminous monochrome tones and gallery-quality clarity.",
+        description: (subject, sourceUse) => `Create a VC-inspired fine-art X-ray visualization of ${subject}, using ${sourceUse.toLowerCase()} when provided. Preserve the subject’s recognizable structure, proportions, orientation, and major visual features while transforming it into a high-resolution radiographic study. Reveal the internal architecture with strong legibility: layered densities, hidden components, structural relationships, internal supports, skeletal or framework geometry, connective elements, voids, fasteners, channels, and overlapping translucent forms. Use luminous monochrome tones with subtle blue-gray radiographic hues, crisp internal separation, clean negative space, and refined gallery-quality contrast. The subject should appear isolated against a pure black or softly lit neutral background, with no clutter, no random scenery, and no distracting effects. Emphasize the visual contrast between the familiar outer silhouette and the hidden internal structure. The final result should feel scientific, elegant, premium, technically precise, and visually arresting.`,
+        render: `Use luminous internal highlighting, subtle radiographic glow, strong contrast, clean surface separation, fine internal detail, premium gallery-print sharpness, and deep negative space. Avoid chaotic bloom or messy neon unless explicitly requested.`,
+        domainRules: `For biological subjects, show internal structure as clean, dry, abstracted anatomical layering without gore, blood, trauma, exposed flesh, or horror. For mechanical subjects, reveal gears, fasteners, bearings, motors, linkages, chambers, ducts, wiring paths, panels, and hidden mechanisms with crisp industrial clarity. For architectural subjects, reveal load paths, framing, utilities, ducts, shafts, foundations, envelope layers, and circulation systems. For cybernetic subjects, reveal synthetic skeletons, embedded conduits, actuators, sensors, processor cores, cooling channels, and clean circuit pathways.`,
+        negative: `cluttered background, random scenery, cartoon style, excessive color, messy effects, unreadable details, low contrast, blurred internal structures, surreal distortion, gore, blood, exposed flesh, wet tissue, horror, injury, body horror, sloppy labels, broken anatomy, extra limbs, distorted hands, melted structure, chaotic wires, unreadable text, cheap sci-fi glow, overexposed highlights, muddy transparency.`
+      },
+      "Photon Forcer: Vernacularity & Googly Photons": {
+        title: "Photon Forcer: Vernacularity & Googly Photons",
+        summary: "Treat light as a thick glowing substance that drips, refracts, and pools while preserving subject realism and compositional control.",
+        description: (subject, sourceUse) => `Reimagine ${subject} through the Photon Forcer’s viscous vernacularity aesthetic, using ${sourceUse.toLowerCase()} when provided. Preserve the subject’s recognizable form, proportions, major features, clothing or surface details, and camera layout. Transform the lighting into thick, tactile, high-energy photon behavior. Make the photons appear to drip from the subject instead of simply bouncing off it. Add glossy light trails, liquid refractions, chromatic streaks, iridescent edge blooms, blacklight poster intensity, wet-looking luminous caustics, and saturated spectral highlights. The image should feel like light has become syrup, plasma, neon paint, and molten glass at the same time. Enhance color depth and vibrancy dramatically while keeping the subject readable. Use intense but controlled color separation: electric cyan, hot magenta, ultraviolet violet, molten orange, laser green, cobalt blue, and white-hot highlight accents. Preserve visual hierarchy so the subject remains dominant and clear. Keep texture and form important. Surface details should catch photonic residue. Edges should glow. Shadows should deepen. Highlights should stretch into controlled drips and trails. The scene should feel alive with optical pressure, as though the light is being forced through the image from another dimension.`,
+        render: `Use high dynamic range, glossy micro-contrast, deep blacks, radiant rim lighting, long-exposure-inspired light trails, front-curtain flash freeze, volumetric haze, chromatic aberration used tastefully, ray-traced reflections, and crisp subject detail beneath the photonic effects.`,
+        domainRules: `Preserve the grounded, imperfect, lived-in character of the original scene while intensifying it through surreal photonic behavior. Keep subject readability, avoid cheap plastic textures, and retain compositional control even when the light is overloaded with color and motion.`,
+        negative: `flat lighting, dull colors, muddy contrast, washed-out highlights, low detail, messy effects, unreadable subject, cartoon style unless requested, random extra objects, distorted face, broken anatomy, extra limbs, deformed hands, cheap plastic look, overdone blur, chaotic neon noise, cluttered background, text artifacts, watermark, loss of pose fidelity.`
+      },
+      "VC X-Ray + Photon Forcer Hybrid": {
+        title: "VC X-Ray + Photon Forcer Hybrid",
+        summary: "Blend premium radiographic clarity with viscous photon dynamics for a museum-quality internal study overloaded by living light.",
+        description: (subject, sourceUse) => `Blend VC-inspired fine-art radiographic clarity with Photon Forcer viscous light behavior, using ${sourceUse.toLowerCase()} when provided. Preserve the subject’s recognizable silhouette, proportions, camera angle, and major structural identity. Reveal hidden internal architecture through translucent density layering, crisp internal separation, and luminous blue-gray radiographic tones. Then intensify the outer edges and highlights with controlled dripping photons, iridescent caustics, spectral rim light, and glossy chromatic trails. The result should feel like a museum-quality X-ray artwork being overloaded by living light: scientific, elegant, radiant, technically precise, colorful at the edges, clean in the structure, and visually arresting. Use a pure black gallery background, strong negative space, high internal legibility, premium sharpness, and controlled HDR contrast.`,
+        render: `Use luminous internal highlighting, subtle radiographic glow, strong contrast, clean surface separation, premium gallery sharpness, deep negative space, high dynamic range, glossy micro-contrast, radiant rim lighting, and controlled photographic trails.`,
+        domainRules: `Combine clear, dry internal anatomical or mechanical layering with intense photonic accents. For biological scenes avoid gore or medical trauma. For mechanical and architectural scenes keep internals precise and legible even as the light becomes syrupy, glowing, and motion-driven.`,
+        negative: `cluttered background, random scenery, messy effects, unreadable details, low contrast, blurred internals, surreal distortion, gore, blood, exposed flesh, body horror, sloppy labels, broken anatomy, extra limbs, distorted hands, chaotic neon noise, cheap plastic look, opaque surfaces that block internal structure.`
+      }
+    };
+
+    // --- Gemini API Integration ---
+    // The execution environment provides the key at runtime here. Let's keep it safe.
+    const apiKey = ""; 
+
+    async function callGemini(promptText) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [{ parts: [{ text: promptText }] }],
+        systemInstruction: { 
+          parts: [{ text: "You are an expert AI image generation prompt engineer. Respond directly with the requested output text, without quotes, formatting, or conversational filler." }] 
+        }
+      };
+
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const data = await response.json();
+          return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+        } catch (error) {
+          if (attempt === 4) throw error;
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt))); // Exponential backoff
+        }
+      }
+    }
+
+    // AI Features Event Listeners
+    document.getElementById('enhanceSubjectBtn').addEventListener('click', async (e) => {
+      const btn = e.target;
+      const input = document.getElementById('subjectInput');
+      const domain = document.getElementById('subjectType').value;
+      if (!input.value) return;
+
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = "✨ Thinking...";
+
+      try {
+        const prompt = `The user wants to generate an image of a ${domain} subject currently described as: "${input.value}". Enhance this short description into a highly detailed, evocative, 1-2 sentence phrase suitable for an image generation prompt. Focus purely on physical descriptors (materials, shapes, condition).`;
+        const result = await callGemini(prompt);
+        if (result) {
+          input.value = result;
+          buildPrompt();
+          showToast("Subject successfully enhanced!");
+        }
+      } catch (err) {
+        showToast("AI enhancement failed. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+
+    document.getElementById('generateNotesBtn').addEventListener('click', async (e) => {
+      const btn = e.target;
+      const textarea = document.getElementById('extraNotes');
+      const visualMode = document.getElementById('visualMode').value;
+      const lightingStyle = document.getElementById('lightingStyle').value;
+      
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = "✨ Generating...";
+
+      try {
+        const prompt = `The user is building a prompt for a ${visualMode} with ${lightingStyle}. Generate 3-5 specific, comma-separated stylistic keywords or technical instructions (like rendering engines e.g., 'Octane render', specific camera lenses, or fine texture details) to append to the prompt. Do not repeat the visual mode or lighting. Output ONLY the comma-separated list.`;
+        const result = await callGemini(prompt);
+        if (result) {
+          const currentVal = textarea.value.trim();
+          textarea.value = currentVal ? `${currentVal}, ${result}` : result;
+          buildPrompt();
+          showToast("Pro tags added!");
+        }
+      } catch (err) {
+        showToast("AI suggestion failed. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+
+    document.getElementById('autoPaletteBtn').addEventListener('click', async (e) => {
+      const btn = e.target;
+      const subject = document.getElementById('subjectInput').value;
+      const visualMode = document.getElementById('visualMode').value;
+      const select = document.getElementById('paletteStyle');
+      const customOption = document.getElementById('customPaletteOption');
+      
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = "✨ Mixing...";
+
+      try {
+        const prompt = `The user is generating an image of a ${subject} in the style of ${visualMode}. Generate a highly specific, evocative, 1-line color palette description tailored to this concept. (e.g., "iridescent bismuth, rusted iron, and neon cyan"). Output ONLY the text.`;
+        const result = await callGemini(prompt);
+        if (result) {
+          customOption.value = result;
+          customOption.textContent = "Custom: " + result;
+          customOption.style.display = "block";
+          select.value = result;
+          buildPrompt();
+          showToast("Custom palette generated!");
+        }
+      } catch (err) {
+        showToast("AI palette generation failed.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+    // --- End Gemini API Integration ---
+ 
+    function getNegativePrompt(subjectType, visualMode, styleEngine) { 
+      let baseNegative = "cluttered background, random scenery, sloppy labels, unreadable text, cartoon style, messy effects, opaque exterior blocking internals, ";
+  
+      if (subjectType === "biological") {
+        baseNegative += "gore, blood, exposed flesh, horror, injury, deformed anatomy, body horror";
+      } else if (subjectType === "mechanical") {
+        baseNegative += "broken parts, impossible mechanisms, floating unrelated components, warped geometry";
+      } else if (subjectType === "architectural") {
+        baseNegative += "people blocking view, messy construction, warped perspective, impossible stairs, illogical floorplans";
+      } else if (subjectType === "cybernetic") {
+        baseNegative += "messy wires, organic decay, rust, unorganized cabling, grotesque fusion";
+      }
+ 
+      if (visualMode.includes("exploded")) {
+        baseNegative += ", messy explosion, chaotic scatter, unorganized spacing";
+      }
+ 
+      const engine = styleEngines[styleEngine];
+      if (engine && engine.negative) {
+        baseNegative += ", " + engine.negative;
+      }
+ 
+      return baseNegative; 
+    } 
+ 
+    function value(id) { 
+      return document.getElementById(id).value.trim(); 
+    } 
+ 
+    function buildPrompt() { 
+      const subjectType = value("subjectType"); 
+      let subject = value("subjectInput"); 
+      if (!subject) {
+        subject = subjectType === "biological" ? "full human body" : 
+                  subjectType === "mechanical" ? "complex engine" : 
+                  subjectType === "architectural" ? "modern skyscraper" : "android prototype";
+      }
+  
+      const extra = value("extraNotes"); 
+      const visualMode = value("visualMode"); 
+      const styleEngine = value("styleEngine");
+      const engine = styleEngines[styleEngine];
+      const negativePrompt = getNegativePrompt(subjectType, visualMode, styleEngine); 
+      const engineBrief = engine ? engine.summary : "A refined visual style engine for enhanced rendering.";
+      const engineDescription = engine ? engine.description(subject, value("sourceUse")) : "Use a highly detailed, technically grounded prompt style tailored for clarity and visual impact.";
+      const engineRender = engine ? engine.render : `Render using ${value("lightingStyle")}. Ensure clean surface separation.`;
+      const engineDomainRules = engine ? engine.domainRules : "Prioritize readable internal structures and avoid chaotic or low-contrast effects.";
+ 
+      const prompt = `[AESTHETIC ENGINE]: ${styleEngine}
+[STYLE SUMMARY]: ${engineBrief}
+[CONCEPT]: ${visualMode} of a ${subject} (${subjectType} subject)
+[CAMERA/LAYOUT]: ${value("cameraAngle")}
+[REFERENCE USE]: ${value("sourceUse")}
+
+[CORE DESCRIPTION]:
+${engineDescription}
+${value("detailFocus")} The viewer must be able to clearly see the internal architecture, components, and relationships.
+
+[LIGHTING & RENDERING]:
+${engineRender}
+
+[STRUCTURE RULES]:
+${engineDomainRules}
+
+[ENVIRONMENT & PALETTE]:
+Use a ${value("backgroundStyle")}. The color palette should feature ${value("paletteStyle")}. Prioritize clarity, legibility, and a strong visual hierarchy over unnecessary visual chaos.
+
+${extra ? `[CUSTOM NOTES]:\n${extra}\n\n` : ""}[NEGATIVE PROMPT]:
+${negativePrompt}`; 
+
+      document.getElementById("promptOutput").textContent = prompt; 
+      return prompt; 
+    }
+
+    function showToast(message) { 
+      const toast = document.getElementById("toast"); 
+      toast.textContent = message; 
+      toast.classList.add("show"); 
+      setTimeout(() => toast.classList.remove("show"), 2000); 
+    } 
+ 
+    fields.forEach(id => { 
+      document.getElementById(id).addEventListener("input", buildPrompt); 
+      document.getElementById(id).addEventListener("change", buildPrompt); 
+    }); 
+ 
+    document.getElementById("copyPrompt").addEventListener("click", () => { 
+      const prompt = buildPrompt(); 
+      try { 
+        const textArea = document.createElement("textarea");
+        textArea.value = prompt;
+        textArea.style.position = "absolute";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast("Prompt copied to clipboard!"); 
+      } catch (error) { 
+        showToast("Copy failed. Select the text manually like an animal."); 
+      } 
+    }); 
+ 
+    document.getElementById("resetForm").addEventListener("click", () => { 
+      document.getElementById("subjectType").value = "biological"; 
+      document.getElementById("subjectInput").value = "full human body"; 
+      document.getElementById("extraNotes").value = ""; 
+      
+      const customOption = document.getElementById('customPaletteOption');
+      customOption.style.display = "none";
+      customOption.value = "";
+  
+      const defaults = {
+        "sourceUse": "Use the uploaded image as strict pose/framing reference.",
+        "visualMode": "X-ray style visualization",
+        "styleEngine": "VC-Inspired Fine-Art Radiographic Study",
+        "cameraAngle": "centered hero shot",
+        "detailFocus": "Show major internal structures clearly with high legibility.",
+        "lightingStyle": "luminous internal highlighting, subtle subsurface scattering",
+        "backgroundStyle": "pure pitch black background, zero clutter",
+        "paletteStyle": "cyan, blue, and luminous white accents"
+      };
+
+      for (const [key, val] of Object.entries(defaults)) {
+        document.getElementById(key).value = val;
+      }
+  
+      buildPrompt(); 
+      showToast("Template reset."); 
+    }); 
+ 
+    document.getElementById("subjectType").addEventListener("change", (event) => { 
+      const input = document.getElementById("subjectInput"); 
+      const type = event.target.value;
+      const current = input.value.toLowerCase();
+  
+      if (current === "full human body" || current === "complex engine" || current === "modern skyscraper" || current === "android prototype" || current === "") {
+        input.value = type === "biological" ? "full human body" : 
+                      type === "mechanical" ? "complex engine" : 
+                      type === "architectural" ? "modern skyscraper" : "android prototype";
+      } 
+      buildPrompt(); 
+    }); 
+ 
+    buildPrompt(); 
+  </script> 
+</body> 
+</html>
